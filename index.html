@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark light">
+  <title>呼吸道周报 · 本周流行什么</title>
+  <meta name="description" content="中国疾控中心呼吸道传染病哨点监测、流感周报、法定传染病月报的通俗版">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0b0d; --panel: #141519; --panel-2: #1b1d22; --hover: rgba(255,255,255,0.035);
+      --line: rgba(255,255,255,0.07); --line-2: rgba(255,255,255,0.14);
+      --text-1: #eef0f3; --text-2: #a2a7b0; --text-3: #676d77;
+      --accent: #fb7185; --grad: linear-gradient(120deg, #fda4af 0%, #fb7185 50%, #f472b6 100%);
+      --up: #fb7185; --down: #4ade80; --low: #4ade80; --mid: #fbbf24; --high: #fb7185;
+      --shadow: 0 0 0 1px var(--line), 0 12px 32px rgba(0,0,0,0.35);
+    }
+    :root[data-theme="light"] {
+      --bg: #f8f8fa; --panel: #ffffff; --panel-2: #f2f3f6; --hover: rgba(20,20,40,0.035);
+      --line: rgba(20,20,40,0.08); --line-2: rgba(20,20,40,0.16);
+      --text-1: #17181c; --text-2: #565b66; --text-3: #959aa4;
+      --accent: #e11d48; --up: #e11d48; --down: #16a34a; --low: #16a34a; --mid: #d97706; --high: #e11d48;
+      --shadow: 0 0 0 1px var(--line), 0 10px 28px rgba(20,20,40,0.06);
+    }
+    body { background: var(--bg); color: var(--text-1); font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased; font-feature-settings: 'tnum' 1; min-height: 100vh; }
+    body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(900px 420px at 15% -10%, rgba(251,113,133,0.09), transparent 70%); }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+    .topbar { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4);
+      background: color-mix(in srgb, var(--bg) 75%, transparent); border-bottom: 1px solid var(--line); }
+    .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 14px; }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; letter-spacing: -0.02em; white-space: nowrap; }
+    .logo-mark { width: 30px; height: 30px; border-radius: 9px; background: var(--grad); display: grid; place-items: center; font-size: 16px; }
+    .logo small { font-weight: 500; color: var(--text-3); font-size: 12px; margin-left: 2px; }
+    .nav { display: flex; gap: 4px; margin-left: 10px; }
+    .nav a { padding: 6px 12px; border-radius: 8px; color: var(--text-2); font-size: 13px; font-weight: 500; white-space: nowrap; }
+    .nav a:hover { color: var(--text-1); background: var(--hover); }
+    .spacer { flex: 1; }
+    .updated { font-size: 12px; color: var(--text-3); white-space: nowrap; }
+    .icon-btn { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--text-2); flex-shrink: 0; }
+    .icon-btn:hover { color: var(--text-1); border-color: var(--line-2); }
+    .icon-btn.spin svg { animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .layout { max-width: 1200px; margin: 0 auto; padding: 24px 20px 64px; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 22px; }
+    .aside { position: sticky; top: 76px; align-self: start; display: flex; flex-direction: column; gap: 14px; }
+    .panel { background: var(--panel); border-radius: 16px; box-shadow: var(--shadow); }
+    .pad { padding: 18px 20px; }
+    h2.sec { font-size: 17px; font-weight: 700; margin: 34px 0 12px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; scroll-margin-top: 80px; }
+    h2.sec small { color: var(--text-3); font-weight: 500; font-size: 12.5px; }
+
+    .hero { padding: 24px; }
+    .hero .wk { font-size: 12.5px; color: var(--text-3); }
+    .hero h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin-top: 4px; line-height: 1.35; }
+    .hero h1 em { font-style: normal; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .levels { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+    .lv { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: var(--panel-2); font-size: 13px; color: var(--text-2); }
+    .lv b { color: var(--c); font-weight: 600; }
+    .lv::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+
+    .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+    .kpi { padding: 16px 18px; min-width: 0; display: flex; flex-direction: column; }
+    .kpi .k { font-size: 12.5px; color: var(--text-2); }
+    .kpi .v { font-size: 30px; font-weight: 700; letter-spacing: -0.03em; white-space: nowrap; }
+    .kpi .v small { font-size: 15px; font-weight: 500; color: var(--text-2); margin-left: 2px; }
+    .kpi .s { font-size: 12px; color: var(--text-3); }
+    .up { color: var(--up); } .down { color: var(--down); } .muted { color: var(--text-3); }
+
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .bars { padding: 18px 20px; }
+    .bars h3 { font-size: 13.5px; font-weight: 600; color: var(--text-2); margin-bottom: 12px; }
+    .bar { display: grid; grid-template-columns: 96px minmax(0, 1fr) 82px; gap: 10px; align-items: center; height: 30px; }
+    .bar .nm { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar .tr { height: 10px; border-radius: 999px; background: var(--panel-2); overflow: hidden; }
+    .bar .fl { height: 100%; border-radius: 999px; background: var(--accent); opacity: .85; }
+    .bar.top .fl { opacity: 1; }
+    .bar .v { text-align: right; font-size: 13px; font-weight: 600; white-space: nowrap; }
+    .bar .v small { font-weight: 500; margin-left: 4px; font-size: 11.5px; }
+
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .chip { padding: 4px 11px; border-radius: 999px; border: 1px solid var(--line); color: var(--text-2); font-size: 12.5px; white-space: nowrap; }
+    .chip:hover { color: var(--text-1); border-color: var(--line-2); }
+    .chip.on { background: var(--text-1); color: var(--bg); border-color: var(--text-1); }
+    .chart-box { padding: 18px 18px 10px; }
+    .chart { position: relative; }
+    .chart svg { width: 100%; height: 260px; display: block; overflow: visible; }
+    .tip { position: absolute; pointer-events: none; background: var(--panel-2); box-shadow: var(--shadow); border-radius: 8px; padding: 6px 10px; font-size: 12px; white-space: nowrap; transform: translate(-50%, -115%); display: none; }
+    .note { font-size: 12px; color: var(--text-3); line-height: 1.7; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: left; }
+    th { font-size: 12px; color: var(--text-3); font-weight: 600; }
+    td.num, th.num { text-align: right; white-space: nowrap; }
+    tr:last-child td { border-bottom: 0; }
+    .table-wrap { overflow-x: auto; }
+    .rank { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+    .rank span { font-size: 12.5px; padding: 2px 9px; border-radius: 999px; background: var(--panel-2); }
+    .rank span:first-child { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
+
+    .analysis { padding: 18px 20px; font-size: 14px; color: var(--text-2); line-height: 1.8; }
+    .tips { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .tip-card { padding: 12px 14px; border-radius: 12px; background: var(--panel-2); font-size: 13px; color: var(--text-2); }
+    .tip-card b { display: block; color: var(--text-1); margin-bottom: 2px; }
+
+    .smalls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .sm { padding: 14px 16px; min-width: 0; }
+    .sm .k { font-size: 13px; font-weight: 600; }
+    .sm .v { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+    .sm .v small { font-size: 12px; color: var(--text-3); font-weight: 500; margin-left: 4px; }
+    .sm svg { width: 100%; height: 40px; display: block; margin-top: 6px; }
+
+    .widget { padding: 16px; }
+    .widget h3 { font-size: 13px; font-weight: 700; color: var(--text-2); margin-bottom: 10px; }
+    .mini-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; gap: 8px; }
+    .mini-row span:first-child { color: var(--text-2); }
+    .ok { color: var(--down); } .bad { color: var(--up); }
+
+    @media (max-width: 980px) { .layout { grid-template-columns: minmax(0, 1fr); } .aside { position: static; } .nav { display: none; } }
+    @media (max-width: 760px) {
+      .topbar-inner { padding: 10px 16px; } .logo small, .updated { display: none; }
+      .layout { padding: 16px 16px 50px; } .hero { padding: 18px; } .hero h1 { font-size: 21px; }
+      .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kpi .v { font-size: 24px; }
+      .two, .tips { grid-template-columns: minmax(0, 1fr); }
+      .smalls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .chart svg { height: 210px; }
+      th, td { padding: 9px 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="logo"><div class="logo-mark">🩺</div>呼吸道周报<small>本周流行什么</small></div>
+      <nav class="nav"><a href="#rank">病原体</a><a href="#trend">走势</a><a href="#who">谁更易感</a><a href="#tips">健康提示</a><a href="#monthly">每月传染病</a></nav>
+      <div class="spacer"></div>
+      <span class="updated" id="updated"></span>
+      <button class="icon-btn" id="refresh" title="重新读取数据"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg></button>
+      <a class="icon-btn" href="https://github.com/climb0516/health-weekly/actions/workflows/scrape.yml" target="_blank" rel="noopener" title="立即抓取（在 GitHub Actions 点 Run workflow）">⚡</a>
+      <button class="icon-btn" id="theme" title="切换主题"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <main id="main"><div class="panel pad muted">加载中…</div></main>
+    <aside class="aside" id="aside"></aside>
+  </div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('hw:' + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('hw:' + k, JSON.stringify(v)); } catch {} },
+};
+const SHORT = { '新型冠状病毒': '新冠', '流感病毒': '流感', '呼吸道合胞病毒': '合胞病毒', '人偏肺病毒': '人偏肺', '副流感病毒': '副流感', '普通冠状病毒': '普通冠状', '肺炎支原体': '肺炎支原体' };
+const short = n => SHORT[n] || n;
+const WATCH = ['流行性感冒', '手足口病', '其他感染性腹泻病', '水痘', '猩红热', '新型冠状病毒感染'];
+const state = { trend: store.get('trend', '流感病毒') };
+let D = null;
+
+function ago(iso) {
+  const s = (Date.now() - new Date(iso)) / 1000;
+  if (s < 3600) return Math.max(1, Math.round(s / 60)) + ' 分钟前';
+  if (s < 86400) return Math.round(s / 3600) + ' 小时前';
+  return Math.round(s / 86400) + ' 天前';
+}
+const md = iso => iso ? `${+iso.slice(5, 7)}月${+iso.slice(8, 10)}日` : '';
+const chgHtml = c => c == null ? '' : `<small class="${c > 0 ? 'up' : c < 0 ? 'down' : 'muted'}">${c > 0 ? '↑' : c < 0 ? '↓' : '持平'}${c ? Math.abs(c).toFixed(1) : ''}</small>`;
+const lvColor = l => !l ? 'var(--text-3)' : l.includes('高') ? 'var(--high)' : l.includes('中') || l.includes('较') ? 'var(--mid)' : 'var(--low)';
+const fmtN = n => n >= 10000 ? (n / 10000).toFixed(n >= 100000 ? 0 : 1) + ' 万' : n.toLocaleString();
+
+function render() {
+  const w = D.weeks[0], prev = D.weeks[1], f = D.flu;
+  const out = Object.entries(w.outpatient).sort((a, b) => b[1].rate - a[1].rate);
+  const inp = Object.entries(w.inpatient).sort((a, b) => b[1].rate - a[1].rate);
+  const [topName, top] = out[0] || [];
+  const covid = w.outpatient['新型冠状病毒'], fluR = w.outpatient['流感病毒'];
+  const iliChg = prev?.ili != null && w.ili != null ? w.ili - prev.ili : null;
+
+  $('#main').innerHTML = `
+    <section class="panel hero">
+      <div class="wk">${w.year} 年第 ${w.week} 周 · ${md(w.period?.[0])}–${md(w.period?.[1])} · 中国疾控中心哨点监测</div>
+      <h1>本周门诊头号病原体是<em>${esc(short(topName))}</em>，阳性率 ${top?.rate}%${top?.chg != null ? `，比上周${top.chg > 0 ? '上升' : top.chg < 0 ? '下降' : '持平'}${top.chg ? ' ' + Math.abs(top.chg) + ' 个百分点' : ''}` : ''}</h1>
+      <div class="levels">
+        ${w.level?.south ? `<span class="lv" style="--c:${lvColor(w.level.south)}">南方流感 <b>${esc(w.level.south)}</b></span>` : ''}
+        ${w.level?.north ? `<span class="lv" style="--c:${lvColor(w.level.north)}">北方流感 <b>${esc(w.level.north)}</b></span>` : ''}
+      </div>
+    </section>
+    <div class="kpis">
+      <div class="panel kpi"><span class="k">流感样病例占门诊</span><span class="v">${w.ili ?? '—'}<small>%</small> ${chgHtml(iliChg)}</span><span class="s">南方 ${w.ili_south ?? '—'}% · 北方 ${w.ili_north ?? '—'}%</span></div>
+      <div class="panel kpi"><span class="k">流感阳性率（门诊）</span><span class="v">${fluR?.rate ?? '—'}<small>%</small> ${chgHtml(fluR?.chg)}</span><span class="s">${f?.h3n2_pct ? `甲型 ${f.a_pct}% · 其中 H3N2 ${f.h3n2_pct}%` : ''}</span></div>
+      <div class="panel kpi"><span class="k">新冠阳性率（门诊）</span><span class="v">${covid?.rate ?? '—'}<small>%</small> ${chgHtml(covid?.chg)}</span><span class="s">住院 ${w.inpatient['新型冠状病毒']?.rate ?? '—'}%</span></div>
+      <div class="panel kpi"><span class="k">流感样病例暴发</span><span class="v">${f?.outbreaks ?? '—'}<small>起</small></span><span class="s">${f?.until ? '截至 ' + md(f.until) : ''}</span></div>
+    </div>
+
+    <h2 class="sec" id="rank">病原体阳性率排行<small>↑↓ 为较上周变化（百分点）</small></h2>
+    <div class="two">
+      ${[['门急诊（流感样病例）', out], ['住院（严重急性呼吸道感染）', inp]].map(([t, list]) => {
+        const max = Math.max(...list.map(x => x[1].rate), 1);
+        return `<div class="panel bars"><h3>${t}</h3>${list.map(([n, v], i) => `<div class="bar ${i === 0 ? 'top' : ''}"><span class="nm">${esc(short(n))}</span>
+          <div class="tr"><div class="fl" style="width:${v.rate / max * 100}%"></div></div><span class="v">${v.rate}%${chgHtml(v.chg)}</span></div>`).join('')}</div>`;
+      }).join('')}
+    </div>
+
+    <h2 class="sec" id="trend">近一年走势<small>门急诊阳性率（%），每周一个点；早期报告只公布前三位病原体，未上榜的周没有数据</small></h2>
+    <div class="panel chart-box">
+      <div class="chips">${['ILI', ...Object.keys(w.outpatient)].map(n => `<button class="chip ${state.trend === n ? 'on' : ''}" data-trend="${esc(n)}">${n === 'ILI' ? '流感样病例%' : esc(short(n))}</button>`).join('')}</div>
+      <div class="chart" id="chart">${trendSVG()}<div class="tip" id="tip"></div></div>
+    </div>
+
+    <h2 class="sec" id="who">谁更容易中招<small>阳性率排名前三的病原体</small></h2>
+    <div class="panel"><div class="table-wrap"><table>
+      <tr><th>地区</th><th>门急诊</th><th>住院</th></tr>
+      ${[['south', '南方省份'], ['north', '北方省份']].map(([k, l]) => w.region?.[k] ? `<tr><td>${l}</td>${['out', 'in'].map(x => `<td><span class="rank">${w.region[k][x].map(n => `<span>${esc(n.split('、').map(short).join('、'))}</span>`).join('')}</span></td>`).join('')}</tr>` : '').join('')}
+    </table></div></div>
+
+    <h2 class="sec" id="tips">官方分析与健康提示<small>原文摘录自中国疾控中心</small></h2>
+    <div class="panel analysis">${esc(w.analysis)}
+      <div class="tips">${(w.tips || []).map(t => { const [h, ...rest] = t.split('：'); return `<div class="tip-card"><b>${esc(h)}</b>${esc(rest.join('：'))}</div>`; }).join('')}</div>
+      <p class="note" style="margin-top:12px"><a href="${esc(w.url)}" target="_blank" rel="noopener">查看原文 ↗</a></p>
+    </div>
+
+    <h2 class="sec" id="monthly">每月法定传染病<small>${D.months[0].month.replace('-', ' 年 ')} 月 · 全国共报告 ${fmtN(D.months[0].total)} 例，月报约滞后 1 个月</small></h2>
+    <div class="smalls">${WATCH.map(n => smallTrend(n)).join('')}</div>
+    <div class="panel" style="margin-top:12px"><div class="table-wrap">${monthTable()}</div></div>
+    <p class="note" style="margin-top:14px">数据来自中国疾病预防控制中心公开报告，仅供了解流行趋势，不构成医疗建议；身体不适请及时就医。</p>
+  `;
+  bindChart();
+
+  $('#aside').innerHTML = `
+    <div class="panel widget">
+      <h3>🦠 流感监测周报</h3>
+      ${f ? `<div class="mini-row"><span>甲型 / 乙型</span><b>${f.a_pct ?? '—'}% / ${f.b_pct ?? '—'}%</b></div>
+      <div class="mini-row"><span>甲型中 H3N2 / H1N1</span><b>${f.h3n2_pct ?? '—'}% / ${f.h1n1_pct ?? '—'}%</b></div>
+      <div class="note" style="margin-top:8px">${esc(f.summary)}</div>
+      <div class="note" style="margin-top:6px"><a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.title)} ↗</a></div>` : '<div class="note">暂无</div>'}
+    </div>
+    <div class="panel widget">
+      <h3>📅 什么时候更新</h3>
+      <div class="note">哨点监测和流感周报：每周四前后发布上一周数据<br>法定传染病：每月中旬发布上上月数据<br>本站每天 10:05 自动检查</div>
+    </div>
+    <div class="panel widget">
+      <h3>📡 数据来源 · ${D.sources.filter(s => s.ok).length}/${D.sources.length} 正常</h3>
+      ${D.sources.map(s => `<div class="mini-row"><span>${esc(s.name)}</span><span class="${s.ok ? 'ok' : 'bad'}">${s.ok ? '正常 · ' + (s.count ?? '') : '失败 · 沿用旧数据'}</span></div>`).join('')}
+      <div class="note" style="margin-top:6px">最近抓取 ${new Date(D.updated).toLocaleString('zh-CN', { hour12: false })}</div>
+    </div>`;
+  $('#updated').textContent = '更新于 ' + ago(D.updated);
+}
+
+// 走势图：每周一个点，缺数据处断开
+let CH = null;
+function trendSVG() {
+  const weeks = [...D.weeks].reverse();
+  const key = state.trend;
+  const pts = weeks.map(w => ({ w, v: key === 'ILI' ? w.ili : w.outpatient[key]?.rate ?? null }));
+  const vals = pts.filter(p => p.v != null).map(p => p.v);
+  if (!vals.length) return '<div class="note" style="padding:40px 0;text-align:center">暂无该病原体数据</div>';
+  const W = 820, H = 260, L = 8, R = 40, T = 12, B = 24;
+  const raw = Math.max(...vals) * 1.1, stepV = raw > 20 ? 10 : raw > 8 ? 5 : raw > 4 ? 2 : 1, max = Math.ceil(raw / stepV) * stepV || 1;   // 纵轴取整
+  const x = i => L + i / (pts.length - 1) * (W - L - R), y = v => T + (1 - v / max) * (H - T - B);
+  let d = '', pen = false;
+  pts.forEach((p, i) => { if (p.v == null) { pen = false; return; } d += `${pen ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`; pen = true; });
+  CH = { pts, x, y, W, H };
+  const grid = Array.from({ length: Math.round(max / stepV) + 1 }, (_, k) => k * stepV).map(v => { return `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${W - R + 6}" y="${y(v) + 4}" font-size="11" fill="var(--text-3)">${v}%</text>`; }).join('');
+  const every = Math.ceil(pts.length / 6);   // 横轴等间隔标 6 个左右
+  const ticks = pts.map((p, i) => (pts.length - 1 - i) % every === 0 ? `<text x="${x(i)}" y="${H - 6}" font-size="11" fill="var(--text-3)" text-anchor="middle">${String(p.w.year).slice(2)}年第${p.w.week}周</text>` : '').join('');
+  const dots = pts.map((p, i) => p.v != null ? `<circle cx="${x(i)}" cy="${y(p.v)}" r="${i === pts.length - 1 ? 4 : 2}" fill="var(--accent)"/>` : '').join('');
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" id="csvg">${grid}${ticks}
+    <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>${dots}
+    <line id="cross" y1="${T}" y2="${H - B}" stroke="var(--line-2)" visibility="hidden"/></svg>`;
+}
+function bindChart() {
+  const box = $('#chart'), svg = $('#csvg'), tip = $('#tip');
+  if (!svg || !CH) return;
+  const move = e => {
+    const r = svg.getBoundingClientRect(), cx = ((e.touches ? e.touches[0].clientX : e.clientX) - r.left) / r.width * CH.W;
+    let bi = 0; CH.pts.forEach((p, i) => { if (Math.abs(CH.x(i) - cx) < Math.abs(CH.x(bi) - cx)) bi = i; });
+    const p = CH.pts[bi];
+    tip.innerHTML = `${p.w.year} 年第 ${p.w.week} 周<br><b>${p.v == null ? '未公布' : p.v + '%'}</b>`;
+    tip.style.display = 'block';
+    tip.style.left = Math.min(r.width - 60, Math.max(60, CH.x(bi) / CH.W * r.width)) + 'px';
+    tip.style.top = ((p.v == null ? CH.H / 2 : CH.y(p.v)) / CH.H * r.height) + 'px';
+    const c = $('#cross'); c.setAttribute('x1', CH.x(bi)); c.setAttribute('x2', CH.x(bi)); c.setAttribute('visibility', 'visible');
+  };
+  box.addEventListener('mousemove', move); box.addEventListener('touchmove', move, { passive: true });
+  box.addEventListener('mouseleave', () => { tip.style.display = 'none'; $('#cross')?.setAttribute('visibility', 'hidden'); });
+}
+
+function smallTrend(name) {
+  const ms = [...D.months].reverse().slice(-24);
+  const v = ms.map(m => m.diseases[name]?.[0] ?? null);
+  const nums = v.filter(x => x != null);
+  if (!nums.length) return '';
+  const cur = D.months[0].diseases[name]?.[0], prevM = D.months[1]?.diseases[name]?.[0];
+  const max = Math.max(...nums) || 1, W = 200, H = 40;
+  const line = v.map((x, i) => x == null ? '' : `${i && v[i - 1] != null ? 'L' : 'M'}${(i / (v.length - 1) * W).toFixed(1)},${(H - 3 - x / max * (H - 6)).toFixed(1)}`).join('');
+  const chg = prevM ? (cur / prevM - 1) * 100 : null;
+  return `<div class="panel sm"><div class="k">${esc(name.replace('其他感染性腹泻病', '感染性腹泻（含诺如）').replace('新型冠状病毒感染', '新冠'))}</div>
+    <div class="v">${cur != null ? fmtN(cur) : '—'}<small>例${chg != null ? ` · 环比 <span class="${chg > 0 ? 'up' : 'down'}">${chg > 0 ? '+' : ''}${chg.toFixed(0)}%</span>` : ''}</small></div>
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${line}" fill="none" stroke="var(--accent)" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg></div>`;
+}
+function monthTable() {
+  const m = D.months[0], p = D.months[1];
+  const rows = Object.entries(m.diseases).filter(([n]) => !/合计|总计/.test(n) && !/^[甲乙丙丁戊]型肝炎$|^未分型肝炎$/.test(n))   /* 肝炎子类已含在「病毒性肝炎」里 */.sort((a, b) => b[1][0] - a[1][0]).slice(0, 10);
+  return `<table><tr><th>${m.month.replace('-', ' 年 ')} 月 · 发病数前十</th><th class="num">发病</th><th class="num">死亡</th><th class="num">环比</th></tr>
+    ${rows.map(([n, [c, d]]) => { const pc = p?.diseases[n]?.[0]; const ch = pc ? (c / pc - 1) * 100 : null;
+      return `<tr><td>${esc(n)}</td><td class="num">${c.toLocaleString()}</td><td class="num">${d.toLocaleString()}</td><td class="num ${ch > 0 ? 'up' : ch < 0 ? 'down' : 'muted'}">${ch == null ? '—' : (ch > 0 ? '+' : '') + ch.toFixed(0) + '%'}</td></tr>`; }).join('')}
+  </table><p class="note" style="padding:10px 14px"><a href="${esc(m.url)}" target="_blank" rel="noopener">查看原文 ↗</a></p>`;
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-trend]');
+  if (!t) return;
+  state.trend = t.dataset.trend; store.set('trend', state.trend);
+  document.querySelectorAll('[data-trend]').forEach(b => b.classList.toggle('on', b === t));
+  $('#chart').innerHTML = trendSVG() + '<div class="tip" id="tip"></div>';
+  bindChart();
+});
+function applyTheme(t) { document.documentElement.dataset.theme = t; }
+applyTheme(store.get('theme', 'dark'));
+$('#theme').addEventListener('click', () => { const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(t); store.set('theme', t); });
+
+async function load() {
+  $('#refresh').classList.add('spin');
+  try {
+    D = await fetch('data.json', { cache: 'no-cache' }).then(r => r.json());   // no-cache：更新后刷新即可见
+    render();
+  } catch (e) {
+    if (!D) $('#main').innerHTML = '<div class="panel pad">数据加载失败，请稍后刷新</div>';
+  } finally { $('#refresh').classList.remove('spin'); }
+}
+$('#refresh').addEventListener('click', load);
+load();
+</script>
+</body>
+</html>

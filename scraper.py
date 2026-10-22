@@ -2,7 +2,7 @@
 """流感 & 呼吸道传染病周报 数据抓取（中国疾控中心官网）。只用标准库。
 
 - 全国急性呼吸道传染病哨点监测（每周）：流感样病例百分比、11 种病原体阳性率及周变化、南北方排名、官方分析与健康提示
-- 中国流感监测周报（每周）：流行情况概要
+- 中国流感监测周报（每周）：流行情况概要、甲乙型占比、暴发数，按 URL 缓存保留最近 30 期
 - 全国法定传染病疫情概况（每月）：各病种发病数、死亡数
 历史期次按 URL 缓存在 data.json 里，已解析过的不再请求。
 """
@@ -19,7 +19,7 @@ CDC = "https://www.chinacdc.cn/jksj"
 ARI, FLU, MONTHLY = "jksj04_14275", "jksj04_14249", "jksj01"
 PATHOGENS = ["新型冠状病毒", "流感病毒", "呼吸道合胞病毒", "腺病毒", "人偏肺病毒", "副流感病毒",
              "普通冠状病毒", "博卡病毒", "鼻病毒", "肠道病毒", "肺炎支原体"]
-MAX_WEEKS, MAX_MONTHS = 60, 36
+MAX_WEEKS, MAX_MONTHS, MAX_FLU = 60, 36, 30
 
 
 def fetch(url, timeout=20):
@@ -152,15 +152,8 @@ def ari(old):
     return uniq[:MAX_WEEKS]
 
 
-# ── 流感监测周报概要 ─────────────────────────────────────
-def flu(old):
-    items = [x for x in list_page(FLU, 1) if "流感监测周报" in x[1]][:1]
-    if not items:
-        raise ValueError("no flu report")
-    url, title = items[0]
-    if old.get("flu", {}).get("url") == url:
-        return old["flu"]
-    t = text_of(fetch(url))
+# ── 流感监测周报概要（按 URL 缓存成列表，攒往期） ──────────────────
+def parse_flu(url, title, t):
     m = re.search(r"概要（截至(\d{4})年\s*(\d+)\s*月\s*(\d+)\s*日）", t)
     body = t[t.find("概要"):]
     body = body[:body.find("文件附件")] if "文件附件" in body else body[:2000]
@@ -171,7 +164,32 @@ def flu(old):
     return {"title": title, "url": url, "until": f"{m.group(1)}-{int(m.group(2)):02d}-{int(m.group(3)):02d}" if m else None,
             "summary": bullets[0] if bullets else "", "a_pct": num(sub.group(1)) if sub else None,
             "b_pct": num(sub.group(2)) if sub else None, "h1n1_pct": num(h3.group(1)) if h3 else None,
-            "h3n2_pct": num(h3.group(2)) if h3 else None, "outbreaks": int(outbreak.group(1)) if outbreak else None}
+            "h3n2_pct": num(h3.group(2)) if h3 else None,
+            "outbreaks": int(outbreak.group(1)) if outbreak else 0 if "未报告流感样病例暴发" in t else None,
+            "more": [b[:400] for b in bullets[1:3]]}                 # 抗原性 / 耐药性分析等其它要点
+
+
+def flu(old):
+    known = {x["url"]: x for x in old.get("flus", [])}
+    if old.get("flu"):
+        known.setdefault(old["flu"]["url"], old["flu"])
+    out = []
+    for url, title in [x for x in list_page(FLU, 3) if "流感监测周报" in x[1]][:MAX_FLU]:
+        if url in known:
+            out.append(known[url])
+            continue
+        try:
+            x = parse_flu(url, title, text_of(fetch(url)))
+            time.sleep(0.3)
+        except Exception:
+            x = None
+        if x:
+            out.append(x)
+    merged = {**known, **{x["url"]: x for x in out}}
+    res = sorted(merged.values(), key=lambda x: x["until"] or "", reverse=True)
+    if not res:
+        raise ValueError("no flu report")
+    return res[:MAX_FLU]
 
 
 # ── 月度法定传染病 ──────────────────────────────────────
@@ -236,17 +254,18 @@ def main():
             return None
 
     weeks = run("呼吸道哨点监测（周）", ari) or old.get("weeks", [])
-    flu_r = run("流感监测周报", flu) or old.get("flu")
+    flus = run("流感监测周报", flu) or old.get("flus") or ([old["flu"]] if old.get("flu") else [])
+    flu_r = flus[0] if flus else None
     months = run("法定传染病概况（月）", monthly) or old.get("months", [])
 
-    data = {"updated": now, "weeks": weeks, "flu": flu_r, "months": months, "sources": sources}   # updated 每次都变 = 心跳
+    data = {"updated": now, "weeks": weeks, "flu": flu_r, "flus": flus, "months": months, "sources": sources}   # updated 每次都变 = 心跳
     DATA_FILE.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), "utf-8")
     w = weeks[0] if weeks else {}
     print("weeks", len(weeks), "latest", w.get("year"), w.get("week"), "ili", w.get("ili"), w.get("ili_south"), w.get("ili_north"), w.get("level"))
     print("outpatient", {k: v["rate"] for k, v in (w.get("outpatient") or {}).items()})
     print("region", w.get("region"), "tips", len(w.get("tips", [])))
     print("with table", sum(1 for x in weeks if len(x["outpatient"]) > 3), "/", len(weeks), "oldest", weeks[-1]["year"] if weeks else None, weeks[-1]["week"] if weeks else None)
-    print("flu", flu_r and (flu_r["until"], flu_r["a_pct"], flu_r["b_pct"], flu_r["outbreaks"]))
+    print("flus", len(flus), "flu", flu_r and (flu_r["until"], flu_r["a_pct"], flu_r["b_pct"], flu_r["outbreaks"]))
     print("months", len(months), months[0]["month"] if months else None, months and list(months[0]["diseases"].items())[:6], months and len(months[0]["diseases"]))
     print("failed", [s["name"] for s in sources if not s["ok"]])
 

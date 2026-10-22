@@ -90,7 +90,7 @@
     .chip.on { background: var(--text-1); color: var(--bg); border-color: var(--text-1); }
     .chart-box { padding: 18px 18px 10px; }
     .chart { position: relative; }
-    .chart svg { width: 100%; height: 260px; display: block; overflow: visible; }
+    .chart svg { width: 100%; height: auto; display: block; overflow: visible; }   /* viewBox 按实际宽度生成，文字不变形 */
     .tip { position: absolute; pointer-events: none; background: var(--panel-2); box-shadow: var(--shadow); border-radius: 8px; padding: 6px 10px; font-size: 12px; white-space: nowrap; transform: translate(-50%, -115%); display: none; }
     .note { font-size: 12px; color: var(--text-3); line-height: 1.7; }
 
@@ -122,16 +122,116 @@
     .mini-row span:first-child { color: var(--text-2); }
     .ok { color: var(--down); } .bad { color: var(--up); }
 
-    @media (max-width: 980px) { .layout { grid-template-columns: minmax(0, 1fr); } .aside { position: static; } .nav { display: none; } }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: minmax(0, 1fr); }
+      .aside { position: static; }
+      .topbar-inner { flex-wrap: wrap; row-gap: 6px; }
+      .nav { order: 10; width: 100%; margin-left: -8px; overflow-x: auto; scrollbar-width: none; }   /* 手机上导航挪到第二行，可横滑 */
+      .nav::-webkit-scrollbar { display: none; }
+    }
     @media (max-width: 760px) {
       .topbar-inner { padding: 10px 16px; } .logo small, .updated { display: none; }
       .layout { padding: 16px 16px 50px; } .hero { padding: 18px; } .hero h1 { font-size: 21px; }
       .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kpi .v { font-size: 24px; }
       .two, .tips { grid-template-columns: minmax(0, 1fr); }
       .smalls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .chart svg { height: 210px; }
       th, td { padding: 9px 10px; }
     }
+    /* ── 详情抽屉 + 列表页（通用组件 kit：电脑右侧滑出，手机底部升起；地址 #/item/类型/id、#/list/key） ── */
+    :root { --kit-bg: var(--bg, #0b0a10); --kit-panel: var(--panel, var(--card, rgba(255,255,255,.04))); --kit-line: var(--line, var(--sep, rgba(255,255,255,.08)));
+      --kit-line2: var(--line-2, rgba(255,255,255,.14)); --kit-t1: var(--text-1, #f1eff7); --kit-t2: var(--text-2, #a39fb3); --kit-t3: var(--text-3, #6b677a);
+      --kit-accent: var(--accent, #a3e635); --kit-hover: var(--hover, rgba(255,255,255,.05)); }
+    .kit-mask { position: fixed; inset: 0; z-index: 90; background: rgba(0,0,0,.38); display: none; }
+    .kit-mask.open { display: block; }
+    .kit-sheet { position: absolute; top: 12px; right: 12px; bottom: 12px; width: clamp(440px, 42vw, 620px); max-width: calc(100vw - 24px);
+      display: flex; flex-direction: column; overflow: hidden; color: var(--kit-t1); border-radius: 18px;
+      background: linear-gradient(var(--kit-panel), var(--kit-panel)), var(--kit-bg); box-shadow: 0 0 0 1px var(--kit-line2), 0 24px 60px rgba(0,0,0,.45);
+      animation: kit-in .24s ease-out; }
+    @keyframes kit-in { from { transform: translateX(40px); opacity: 0; } }
+    .kit-x { position: absolute; top: 12px; right: 12px; z-index: 3; width: 32px; height: 32px; border-radius: 50%; border: 0; cursor: pointer;
+      background: rgba(0,0,0,.5); color: #fff; font-size: 15px; display: grid; place-items: center; }
+    .kit-scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; }
+    .kit-cover { aspect-ratio: 16/9; background: var(--kit-hover) center / cover no-repeat; position: relative; }
+    .kit-cover.tall { aspect-ratio: auto; height: 280px; background-size: contain; background-color: #000; }
+    .kit-cover.ph { display: grid; place-items: center; font-size: 56px; aspect-ratio: 16/6; }
+    .kit-head { padding: 18px 20px 4px; display: flex; gap: 14px; align-items: flex-start; }
+    .kit-head .kit-thumb { flex-shrink: 0; width: 64px; height: 64px; border-radius: 14px; background: var(--kit-hover) center / cover no-repeat;
+      display: grid; place-items: center; font-size: 28px; overflow: hidden; }
+    .kit-head .kit-t { flex: 1; min-width: 0; padding-right: 30px; }
+    .kit-cover + .kit-head .kit-t { padding-right: 0; }
+    .kit-head h2 { font-size: 19px; font-weight: 800; line-height: 1.35; letter-spacing: -0.01em; }
+    .kit-sub { color: var(--kit-t2); font-size: 13px; margin-top: 4px; }
+    .kit-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .kit-tags span { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--kit-hover); color: var(--kit-t2); }
+    .kit-big { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .kit-big b { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+    .kit-body { padding: 4px 20px 20px; }
+    .kit-sec { padding-top: 16px; }
+    .kit-sec + .kit-sec { margin-top: 6px; border-top: 1px solid var(--kit-line); }
+    .kit-sec h4 { font-size: 14.5px; font-weight: 700; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .kit-sec h4 small { font-size: 12px; color: var(--kit-t3); font-weight: 500; }
+    .kit-kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+    .kit-kv div { background: var(--kit-hover); border-radius: 10px; padding: 8px 11px; min-width: 0; }
+    .kit-kv small { display: block; font-size: 11px; color: var(--kit-t3); }
+    .kit-kv b { display: block; font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+    .kit-p { font-size: 13.5px; line-height: 1.75; color: var(--kit-t2); white-space: pre-line; }
+    .kit-rows { display: flex; flex-direction: column; }
+    .kit-row { display: flex; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid var(--kit-line); font-size: 13px; text-decoration: none; color: inherit; }
+    .kit-row:first-child { border-top: 0; }
+    .kit-row[data-kit-go], a.kit-row { cursor: pointer; }
+    .kit-row[data-kit-go]:hover .kit-rt, a.kit-row:hover .kit-rt { color: var(--kit-accent); }
+    .kit-row .kit-rt { flex: 1; min-width: 0; line-height: 1.45; }
+    .kit-row .kit-rm { color: var(--kit-t3); font-size: 12px; white-space: nowrap; }
+    .kit-row img, .kit-row .kit-ri { width: 54px; height: 40px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: var(--kit-hover); }
+    .kit-acts { flex-shrink: 0; display: flex; gap: 10px; padding: 12px 20px 16px; border-top: 1px solid var(--kit-line); }
+    .kit-acts a, .kit-acts button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 12px; border-radius: 11px;
+      font: inherit; font-size: 13.5px; font-weight: 700; text-decoration: none; cursor: pointer; border: 1px solid var(--kit-line2); color: var(--kit-t1); background: transparent; }
+    .kit-acts .pri { background: var(--kit-accent); border-color: var(--kit-accent); color: #111; }
+    .kit-acts a:hover, .kit-acts button:hover { filter: brightness(1.08); }
+    /* 列表页 */
+    .kit-lhead { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .kit-back { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--kit-line2); background: transparent; color: var(--kit-t1);
+      font-size: 20px; cursor: pointer; display: grid; place-items: center; flex-shrink: 0; }
+    .kit-back:hover { background: var(--kit-hover); }
+    .kit-lhead h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+    .kit-lhead small { color: var(--kit-t3); font-size: 12.5px; margin-left: 2px; }
+    .kit-lbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .kit-chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+    .kit-chips a, .kit-chips button { padding: 5px 12px; border-radius: 8px; background: var(--kit-hover); color: var(--kit-t2); font: inherit; font-size: 13px;
+      font-weight: 600; white-space: nowrap; border: 0; cursor: pointer; text-decoration: none; }
+    .kit-chips .on { background: var(--kit-t1); color: var(--kit-bg); }
+    .kit-chips small { opacity: .6; margin-left: 4px; font-weight: 500; }
+    .kit-sel { padding: 6px 10px; border-radius: 9px; border: 1px solid var(--kit-line2); background: transparent; color: var(--kit-t1); font: inherit; font-size: 12.5px; font-weight: 600; }
+    .kit-sel option { background: var(--kit-bg); }
+    .kit-more { display: block; margin: 16px auto 0; padding: 9px 22px; border-radius: 10px; border: 1px solid var(--kit-line2); background: transparent;
+      color: var(--kit-t1); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .kit-more:hover { background: var(--kit-hover); }
+    .kit-morelink { font-size: 13px; font-weight: 600; color: var(--kit-t2); text-decoration: none; white-space: nowrap; cursor: pointer; }
+    .kit-morelink:hover { color: var(--kit-t1); }
+    [data-kit-item] { cursor: pointer; }
+    @media (max-width: 760px) {
+      .kit-sheet { top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-width: none; height: 86vh; border-radius: 18px 18px 0 0; animation: kit-up .26s ease-out; }
+      @keyframes kit-up { from { transform: translateY(30%); opacity: .5; } }
+      .kit-head { padding: 16px 16px 4px; } .kit-body { padding: 4px 16px 18px; } .kit-acts { padding: 10px 16px 16px; }
+      .kit-cover.tall { height: 220px; }
+      .kit-head .kit-thumb { width: 46px; height: 46px; border-radius: 12px; font-size: 22px; }
+      .kit-head h2 { font-size: 17.5px; }
+      .kit-big b { font-size: 24px; }
+      .kit-lhead h2 { font-size: 19px; }
+    }
+
+    /* 本站：可点条目的悬停态 */
+    tr[data-kit-item]:hover td, .bar[data-kit-item]:hover, .mini-row[data-kit-item]:hover { background: var(--hover); }
+    .bar[data-kit-item] { border-radius: 8px; margin: 0 -6px; padding: 0 6px; }
+    .kpi[data-kit-item]:hover, .sm[data-kit-item]:hover, .hero[data-kit-item]:hover { box-shadow: 0 0 0 1px var(--line-2); }
+    .mini-row[data-kit-item] { border-radius: 6px; }
+    h2.sec .kit-morelink { margin-left: auto; }
+    td.go { color: var(--text-3); text-align: right; white-space: nowrap; }
+    .kit-body .chart svg { margin-top: 2px; }
+    .lg { display: flex; gap: 14px; font-size: 12px; color: var(--text-2); margin-bottom: 6px; flex-wrap: wrap; }
+    .lg i { display: inline-block; width: 14px; height: 0; border-top: 2px solid var(--c); vertical-align: middle; margin-right: 5px; }
+    .lg i.dash { border-top-style: dashed; }
+    .week-row td:first-child { white-space: nowrap; }
   </style>
 </head>
 <body>
@@ -153,6 +253,134 @@
   </div>
 
 <script>
+// ── kit：详情抽屉 + 列表页路由（各站通用，内联在页面里）──
+// 用法：
+//   KIT.item('news', id => ({ title, sub, cover, thumb, tags:[], big, body:'<div class="kit-sec">…</div>', acts:[{text, href, pri}] }))
+//   KIT.list('news', (param, query) => { … 把列表页 HTML 写进容器 … })
+//   条目元素加 data-kit-item="news/<id>" 即可点击打开详情；「查看更多」写成 <a href="#/list/news">
+//   站点首页渲染函数里先调用 KIT.route() —— 返回 true 表示当前是列表页（已渲染），首页不用再渲染
+const KIT = (() => {
+  const items = {}, lists = {};
+  let mask, homeY = 0, fromHome = 0, lastHash = location.hash, onHome = null, listBox = null;
+  const kesc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const parse = h => {
+    const m = (h === undefined ? location.hash : h).match(/^#\/(item|list)\/([^?]+?)(?:\?(.*))?$/);
+    if (!m) return null;
+    const [type, ...rest] = m[2].split('/');
+    return { kind: m[1], type: decodeURIComponent(type), id: rest.map(decodeURIComponent).join('/'), q: new URLSearchParams(m[3] || '') };
+  };
+  function ensure() {
+    if (mask) return;
+    mask = document.createElement('div');
+    mask.className = 'kit-mask';
+    mask.innerHTML = '<div class="kit-sheet" role="dialog" aria-modal="true"></div>';
+    document.body.appendChild(mask);
+    mask.addEventListener('click', e => { if (e.target === mask || e.target.closest('[data-kit-close]')) close(); });
+  }
+  function render(d) {
+    ensure();
+    const cover = d.cover ? `<div class="kit-cover ${d.coverTall ? 'tall' : ''}" style="background-image:url('${kesc(d.cover).replace(/'/g, '%27')}')"></div>`
+      : d.coverIcon ? `<div class="kit-cover ph" style="background:${d.coverBg || 'var(--kit-hover)'}">${d.coverIcon}</div>` : '';
+    const thumb = !d.cover && !d.coverIcon && (d.thumb || d.thumbIcon)
+      ? `<div class="kit-thumb" style="${d.thumb ? `background-image:url('${kesc(d.thumb).replace(/'/g, '%27')}')` : ''}${d.thumbBg ? `;background-color:${d.thumbBg}` : ''}">${d.thumb ? '' : d.thumbIcon}</div>` : '';
+    const acts = (d.acts || []).filter(a => a && (a.href || a.onclick));
+    mask.firstElementChild.innerHTML = `<button class="kit-x" data-kit-close aria-label="关闭">✕</button>
+      <div class="kit-scroll">${cover}
+        <div class="kit-head">${thumb}<div class="kit-t"><h2>${kesc(d.title)}</h2>${d.sub ? `<div class="kit-sub">${d.sub}</div>` : ''}
+          ${(d.tags || []).filter(Boolean).length ? `<div class="kit-tags">${d.tags.filter(Boolean).join('')}</div>` : ''}${d.big ? `<div class="kit-big">${d.big}</div>` : ''}</div></div>
+        <div class="kit-body">${d.body || ''}</div></div>
+      ${acts.length ? `<div class="kit-acts">${acts.map((a, i) => a.href
+        ? `<a class="${a.pri || (i === 0 && acts.length < 3) ? 'pri' : ''}" href="${kesc(a.href)}" ${a.self ? '' : 'target="_blank" rel="noopener"'}>${a.text}</a>`
+        : `<button class="${a.pri ? 'pri' : ''}" data-kit-act="${i}">${a.text}</button>`).join('')}</div>` : ''}`;
+    acts.forEach((a, i) => { if (!a.href) { const b = mask.querySelector(`[data-kit-act="${i}"]`); if (b) b.onclick = a.onclick; } });
+    mask.querySelector('.kit-scroll').scrollTop = 0;
+    mask.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  // 打开详情：写进地址（可分享；浏览器返回 = 关闭）
+  function open(key) {
+    const target = '#/item/' + key;
+    if (location.hash === target) return show(parse(target));
+    ensure();
+    if (parse()?.kind === 'item') history.replaceState(history.state, '', target);
+    else { mask.dataset.base = location.hash; history.pushState({ kit: 1 }, '', target); }
+    lastHash = target;
+    show(parse(target));
+  }
+  function show(r) {
+    const fn = items[r.type];
+    const d = fn && fn(r.id, r.q);
+    if (!d) { close(true); return false; }
+    render(d);
+    return true;
+  }
+  function close(silent) {
+    if (!mask || !mask.classList.contains('open')) return;
+    mask.classList.remove('open');
+    document.body.style.overflow = '';
+    if (!silent && parse()?.kind === 'item') {
+      if (history.state && history.state.kit) history.back();          // 从页面里点开的：退回去
+      else { history.replaceState(null, '', mask.dataset.base || location.pathname + location.search); lastHash = location.hash; }   // 直接打开的分享链接
+    }
+  }
+  // 当前地址是列表页时渲染列表页并返回 true；首页时返回 false
+  function route(box) {
+    if (box) listBox = box;
+    const r = parse();
+    if (r && r.kind === 'list' && lists[r.type]) { lists[r.type](r.id, r.q, listBox); return true; }
+    return false;
+  }
+  // 列表页的公共外壳：返回按钮 + 标题 + 子分类 + 排序
+  function shell({ title, note, chips, sort, sortVal, body, more }) {
+    return `<div class="kit-lhead"><button class="kit-back" data-kit-back title="返回">‹</button><h2>${kesc(title)}</h2>${note ? `<small>${note}</small>` : ''}</div>
+      ${chips || sort ? `<div class="kit-lbar"><div class="kit-chips">${(chips || []).map(c => `<a class="${c.on ? 'on' : ''}" href="${kesc(c.href)}">${kesc(c.text)}${c.count != null ? `<small>${c.count}</small>` : ''}</a>`).join('')}</div>
+        ${sort ? `<select class="kit-sel" data-kit-sort>${sort.map(([v, n]) => `<option value="${kesc(v)}" ${v === sortVal ? 'selected' : ''}>${kesc(n)}</option>`).join('')}</select>` : ''}</div>` : ''}
+      ${body}${more ? `<button class="kit-more" data-kit-more>${more}</button>` : ''}`;
+  }
+  function init(home) {
+    onHome = home;
+    document.addEventListener('click', e => {
+      const t = e.target.closest('[data-kit-item],[data-kit-go],[data-kit-back]');
+      if (!t) return;
+      const inner = e.target.closest('a[href],button,input,select,label,summary');   // 卡片里的其它按钮 / 链接（关注、复制…）优先
+      if (inner && inner !== t && t.contains(inner)) return;
+      e.preventDefault();
+      if (t.dataset.kitBack !== undefined) { fromHome && history.length > fromHome ? history.go(-fromHome) : (location.hash = ''); return; }
+      open(t.dataset.kitItem || t.dataset.kitGo);
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+    window.addEventListener('hashchange', () => {
+      const r = parse();
+      let was = parse(lastHash), steps = 1;
+      if (was && was.kind === 'item') {                                 // 从详情离开
+        const base = mask && mask.dataset.base !== undefined ? mask.dataset.base : '';
+        if (location.hash === base) { lastHash = location.hash; close(true); return; }   // 只是关掉详情，底下页面不动
+        was = parse(base); steps = 2;                                   // 在详情里点了别的列表：按详情底下那页算，返回要退两步
+      }
+      lastHash = location.hash;
+      if (r && r.kind === 'item') { show(r); return; }
+      close(true);
+      const wasHome = !was;
+      if (r && r.kind === 'list') {
+        if (wasHome) { homeY = scrollY; fromHome = steps; }
+        onHome && onHome();
+        if (wasHome || was.type !== r.type) scrollTo(0, 0);
+      } else {
+        onHome && onHome();
+        if (fromHome) { scrollTo(0, homeY); fromHome = 0; }
+      }
+    });
+    // 直接打开带 #/item/ 的链接（比如大屏跳过来）：页面数据读完后由站点调用 KIT.boot()
+  }
+  function boot() { const r = parse(); if (r && r.kind === 'item') show(r); }
+  return { item: (t, fn) => (items[t] = fn), list: (t, fn) => (lists[t] = fn), open, close, route, shell, init, boot, parse, esc: kesc,
+    // 小工具：详情里的键值格、段落、关联列表
+    kv: rows => { const r = rows.filter(x => x && x[1] != null && x[1] !== ''); return r.length ? `<div class="kit-kv">${r.map(([k, v]) => `<div><small>${kesc(k)}</small><b title="${kesc(v)}">${kesc(v)}</b></div>`).join('')}</div>` : ''; },
+    sec: (title, html, note) => html ? `<div class="kit-sec"><h4>${title}${note ? `<small>${note}</small>` : ''}</h4>${html}</div>` : '',
+    p: t => t ? `<p class="kit-p">${kesc(t)}</p>` : '',
+  };
+})();
+
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store = {
@@ -176,16 +404,31 @@ const chgHtml = c => c == null ? '' : `<small class="${c > 0 ? 'up' : c < 0 ? 'd
 const lvColor = l => !l ? 'var(--text-3)' : l.includes('高') ? 'var(--high)' : l.includes('中') || l.includes('较') ? 'var(--mid)' : 'var(--low)';
 const fmtN = n => n >= 10000 ? (n / 10000).toFixed(n >= 100000 ? 0 : 1) + ' 万' : n.toLocaleString();
 
+// 病原体详情 id：英文短码（大屏跳转用），也兼容直接写中文名；ili = 流感样病例百分比
+const PID = { '新型冠状病毒': 'covid', '流感病毒': 'flu', '呼吸道合胞病毒': 'rsv', '腺病毒': 'adv', '人偏肺病毒': 'hmpv', '副流感病毒': 'piv',
+  '普通冠状病毒': 'hcov', '博卡病毒': 'hbov', '鼻病毒': 'rv', '肠道病毒': 'ev', '肺炎支原体': 'mp' };
+const pid = n => PID[n] || encodeURIComponent(n);
+const wid = w => `${w.year}-${w.week}`;                                   // 周报 id：2026-41
+const fid = f => f.until || f.url.match(/_(\d+)\.html/)?.[1] || '';     // 流感周报 id：截至日期
+const dName = n => n.replace('其他感染性腹泻病', '感染性腹泻（含诺如）').replace('新型冠状病毒感染', '新冠');
+const isTotal = n => /合计|总计/.test(n);
+const tag = t => t ? `<span>${esc(t)}</span>` : '';
+// 抽屉内图表宽度（与 kit-sheet 宽度一致，减去内边距）
+const drawerW = () => innerWidth <= 760 ? innerWidth - 32 : Math.min(620, Math.max(440, innerWidth * 0.42)) - 40;
+
 function render() {
+  renderAside();
+  if (KIT.route($('#main'))) return;   // #/list/… 列表页
   const w = D.weeks[0], prev = D.weeks[1], f = D.flu;
   const out = Object.entries(w.outpatient).sort((a, b) => b[1].rate - a[1].rate);
   const inp = Object.entries(w.inpatient).sort((a, b) => b[1].rate - a[1].rate);
   const [topName, top] = out[0] || [];
   const covid = w.outpatient['新型冠状病毒'], fluR = w.outpatient['流感病毒'];
   const iliChg = prev?.ili != null && w.ili != null ? w.ili - prev.ili : null;
+  const nDis = Object.keys(D.months[0].diseases).filter(n => !isTotal(n)).length;
 
   $('#main').innerHTML = `
-    <section class="panel hero">
+    <section class="panel hero" data-kit-item="week/${wid(w)}">
       <div class="wk">${w.year} 年第 ${w.week} 周 · ${md(w.period?.[0])}–${md(w.period?.[1])} · 中国疾控中心哨点监测</div>
       <h1>本周门诊头号病原体是<em>${esc(short(topName))}</em>，阳性率 ${top?.rate}%${top?.chg != null ? `，比上周${top.chg > 0 ? '上升' : top.chg < 0 ? '下降' : '持平'}${top.chg ? ' ' + Math.abs(top.chg) + ' 个百分点' : ''}` : ''}</h1>
       <div class="levels">
@@ -194,17 +437,17 @@ function render() {
       </div>
     </section>
     <div class="kpis">
-      <div class="panel kpi"><span class="k">流感样病例占门诊</span><span class="v">${w.ili ?? '—'}<small>%</small> ${chgHtml(iliChg)}</span><span class="s">南方 ${w.ili_south ?? '—'}% · 北方 ${w.ili_north ?? '—'}%</span></div>
-      <div class="panel kpi"><span class="k">流感阳性率（门诊）</span><span class="v">${fluR?.rate ?? '—'}<small>%</small> ${chgHtml(fluR?.chg)}</span><span class="s">${f?.h3n2_pct ? `甲型 ${f.a_pct}% · 其中 H3N2 ${f.h3n2_pct}%` : ''}</span></div>
-      <div class="panel kpi"><span class="k">新冠阳性率（门诊）</span><span class="v">${covid?.rate ?? '—'}<small>%</small> ${chgHtml(covid?.chg)}</span><span class="s">住院 ${w.inpatient['新型冠状病毒']?.rate ?? '—'}%</span></div>
-      <div class="panel kpi"><span class="k">流感样病例暴发</span><span class="v">${f?.outbreaks ?? '—'}<small>起</small></span><span class="s">${f?.until ? '截至 ' + md(f.until) : ''}</span></div>
+      <div class="panel kpi" data-kit-item="pathogen/ili"><span class="k">流感样病例占门诊</span><span class="v">${w.ili ?? '—'}<small>%</small> ${chgHtml(iliChg)}</span><span class="s">南方 ${w.ili_south ?? '—'}% · 北方 ${w.ili_north ?? '—'}%</span></div>
+      <div class="panel kpi" data-kit-item="pathogen/flu"><span class="k">流感阳性率（门诊）</span><span class="v">${fluR?.rate ?? '—'}<small>%</small> ${chgHtml(fluR?.chg)}</span><span class="s">${f?.h3n2_pct ? `甲型 ${f.a_pct}% · 其中 H3N2 ${f.h3n2_pct}%` : ''}</span></div>
+      <div class="panel kpi" data-kit-item="pathogen/covid"><span class="k">新冠阳性率（门诊）</span><span class="v">${covid?.rate ?? '—'}<small>%</small> ${chgHtml(covid?.chg)}</span><span class="s">住院 ${w.inpatient['新型冠状病毒']?.rate ?? '—'}%</span></div>
+      <div class="panel kpi" ${f ? `data-kit-item="flu/${fid(f)}"` : ''}><span class="k">流感样病例暴发</span><span class="v">${f?.outbreaks ?? '—'}<small>起</small></span><span class="s">${f?.until ? '截至 ' + md(f.until) : ''}</span></div>
     </div>
 
-    <h2 class="sec" id="rank">病原体阳性率排行<small>↑↓ 为较上周变化（百分点）</small></h2>
+    <h2 class="sec" id="rank">病原体阳性率排行<small>↑↓ 为较上周变化（百分点）· 点病原体看近一年走势</small></h2>
     <div class="two">
       ${[['门急诊（流感样病例）', out], ['住院（严重急性呼吸道感染）', inp]].map(([t, list]) => {
         const max = Math.max(...list.map(x => x[1].rate), 1);
-        return `<div class="panel bars"><h3>${t}</h3>${list.map(([n, v], i) => `<div class="bar ${i === 0 ? 'top' : ''}"><span class="nm">${esc(short(n))}</span>
+        return `<div class="panel bars"><h3>${t}</h3>${list.map(([n, v], i) => `<div class="bar ${i === 0 ? 'top' : ''}" data-kit-item="pathogen/${pid(n)}"><span class="nm">${esc(short(n))}</span>
           <div class="tr"><div class="fl" style="width:${v.rate / max * 100}%"></div></div><span class="v">${v.rate}%${chgHtml(v.chg)}</span></div>`).join('')}</div>`;
       }).join('')}
     </div>
@@ -212,7 +455,7 @@ function render() {
     <h2 class="sec" id="trend">近一年走势<small>门急诊阳性率（%），每周一个点；早期报告只公布前三位病原体，未上榜的周没有数据</small></h2>
     <div class="panel chart-box">
       <div class="chips">${['ILI', ...Object.keys(w.outpatient)].map(n => `<button class="chip ${state.trend === n ? 'on' : ''}" data-trend="${esc(n)}">${n === 'ILI' ? '流感样病例%' : esc(short(n))}</button>`).join('')}</div>
-      <div class="chart" id="chart">${trendSVG()}<div class="tip" id="tip"></div></div>
+      <div id="chart">${trendSVG()}</div>
     </div>
 
     <h2 class="sec" id="who">谁更容易中招<small>阳性率排名前三的病原体</small></h2>
@@ -221,26 +464,28 @@ function render() {
       ${[['south', '南方省份'], ['north', '北方省份']].map(([k, l]) => w.region?.[k] ? `<tr><td>${l}</td>${['out', 'in'].map(x => `<td><span class="rank">${w.region[k][x].map(n => `<span>${esc(n.split('、').map(short).join('、'))}</span>`).join('')}</span></td>`).join('')}</tr>` : '').join('')}
     </table></div></div>
 
-    <h2 class="sec" id="tips">官方分析与健康提示<small>原文摘录自中国疾控中心</small></h2>
+    <h2 class="sec" id="tips">官方分析与健康提示<small>原文摘录自中国疾控中心</small><a class="kit-morelink" href="#/list/weeks">往期周报 ${D.weeks.length} 期 →</a></h2>
     <div class="panel analysis">${esc(w.analysis)}
       <div class="tips">${(w.tips || []).map(t => { const [h, ...rest] = t.split('：'); return `<div class="tip-card"><b>${esc(h)}</b>${esc(rest.join('：'))}</div>`; }).join('')}</div>
-      <p class="note" style="margin-top:12px"><a href="${esc(w.url)}" target="_blank" rel="noopener">查看原文 ↗</a></p>
+      <p class="note" style="margin-top:12px"><a href="#/item/week/${wid(w)}" data-kit-item="week/${wid(w)}">本周周报详情 ›</a> · <a href="${esc(w.url)}" target="_blank" rel="noopener">查看原文 ↗</a></p>
     </div>
 
-    <h2 class="sec" id="monthly">每月法定传染病<small>${D.months[0].month.replace('-', ' 年 ')} 月 · 全国共报告 ${fmtN(D.months[0].total)} 例，月报约滞后 1 个月</small></h2>
+    <h2 class="sec" id="monthly">每月法定传染病<small>${D.months[0].month.replace('-', ' 年 ')} 月 · 全国共报告 ${fmtN(D.months[0].total)} 例，月报约滞后 1 个月</small><a class="kit-morelink" href="#/list/diseases">全部 ${nDis} 种 →</a></h2>
     <div class="smalls">${WATCH.map(n => smallTrend(n)).join('')}</div>
     <div class="panel" style="margin-top:12px"><div class="table-wrap">${monthTable()}</div></div>
     <p class="note" style="margin-top:14px">数据来自中国疾病预防控制中心公开报告，仅供了解流行趋势，不构成医疗建议；身体不适请及时就医。</p>
   `;
-  bindChart();
+}
 
+function renderAside() {
+  const f = D.flu;
   $('#aside').innerHTML = `
     <div class="panel widget">
-      <h3>🦠 流感监测周报</h3>
+      <h3 ${f ? `data-kit-item="flu/${fid(f)}" style="cursor:pointer;display:flex"` : ''}>🦠 流感监测周报${f ? '<span class="muted" style="margin-left:auto;font-weight:500">详情 ›</span>' : ''}</h3>
       ${f ? `<div class="mini-row"><span>甲型 / 乙型</span><b>${f.a_pct ?? '—'}% / ${f.b_pct ?? '—'}%</b></div>
       <div class="mini-row"><span>甲型中 H3N2 / H1N1</span><b>${f.h3n2_pct ?? '—'}% / ${f.h1n1_pct ?? '—'}%</b></div>
       <div class="note" style="margin-top:8px">${esc(f.summary)}</div>
-      <div class="note" style="margin-top:6px"><a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.title)} ↗</a></div>` : '<div class="note">暂无</div>'}
+      <div class="note" style="margin-top:6px;display:flex;gap:8px"><a class="kit-morelink" href="#/list/flu">往期 ${(D.flus || [f]).length} 期 →</a><span class="spacer"></span><a href="${esc(f.url)}" target="_blank" rel="noopener">原文 ↗</a></div>` : '<div class="note">暂无</div>'}
     </div>
     <div class="panel widget">
       <h3>📅 什么时候更新</h3>
@@ -254,44 +499,70 @@ function render() {
   $('#updated').textContent = '更新于 ' + ago(D.updated);
 }
 
-// 走势图：每周一个点，缺数据处断开
-let CH = null;
+// ── 折线图：viewBox 按容器实际像素宽度生成（不拉伸，文字不变形），缺数据处断开 ──
+// series: [{ name, vals, color, dash }]；labels：提示框文字；ticks：横轴短标签
+const CHS = {};
+function niceStep(raw) {
+  const p = Math.pow(10, Math.floor(Math.log10(raw / 4)));
+  return [1, 2, 5, 10].map(k => k * p).find(s => raw / s <= 5) || 10 * p;
+}
+function lineChart(id, labels, ticks, series, { W = 600, H = 240, unit = '%' } = {}) {
+  const vals = series.flatMap(s => s.vals).filter(v => v != null);
+  if (!vals.length) return '<div class="note" style="padding:40px 0;text-align:center">暂无数据</div>';
+  W = Math.max(260, Math.round(W));
+  const n = labels.length, fmt = unit === '%' ? v => v + '%' : v => fmtN(v);
+  const L = 8, R = unit === '%' ? 40 : 54, T = 12, B = 24;
+  const raw = Math.max(...vals) * 1.1 || 1, stepV = niceStep(raw), max = Math.ceil(raw / stepV) * stepV;
+  const x = i => L + (n > 1 ? i / (n - 1) : 0.5) * (W - L - R), y = v => T + (1 - v / max) * (H - T - B);
+  const grid = Array.from({ length: Math.round(max / stepV) + 1 }, (_, k) => k * stepV).map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${W - R + 6}" y="${y(v) + 4}" font-size="11" fill="var(--text-3)">${fmt(+v.toPrecision(6))}</text>`).join('');
+  const every = Math.ceil(n / Math.max(2, Math.floor((W - L - R) / 86)));   // 横轴每 86px 左右一个标签
+  const tk = ticks.map((t, i) => (n - 1 - i) % every === 0 ? `<text x="${x(i)}" y="${H - 6}" font-size="11" fill="var(--text-3)" text-anchor="middle">${esc(t)}</text>` : '').join('');
+  const lines = series.map(s => {
+    let d = '', pen = false;
+    s.vals.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`; pen = true; });
+    const dots = s.dash ? '' : s.vals.map((v, i) => v != null ? `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="${i === n - 1 ? 4 : n > 40 ? 1.8 : 2.5}" fill="${s.color}"/>` : '').join('');
+    return `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" ${s.dash ? 'stroke-dasharray="5 4"' : ''}/>${dots}`;
+  }).join('');
+  CHS[id] = { labels, series, x, y, W, H, n, fmt };
+  return `<div class="chart" data-chart="${id}"><svg viewBox="0 0 ${W} ${H}">${grid}${tk}${lines}
+    <line class="cross" y1="${T}" y2="${H - B}" stroke="var(--line-2)" visibility="hidden"/></svg><div class="tip"></div></div>`;
+}
+const legend = series => series.length > 1 ? `<div class="lg">${series.map(s => `<span><i class="${s.dash ? 'dash' : ''}" style="--c:${s.color}"></i>${esc(s.name)}</span>`).join('')}</div>` : '';
+// 提示框：鼠标和触屏都支持，事件委托（首页和抽屉里的图通用）
+let tipBox = null;
+function chartMove(e) {
+  const box = e.target.closest?.('.chart[data-chart]');
+  if (tipBox && tipBox !== box) { tipBox.querySelector('.tip').style.display = 'none'; tipBox.querySelector('.cross')?.setAttribute('visibility', 'hidden'); tipBox = null; }
+  const c = box && CHS[box.dataset.chart], svg = box?.querySelector('svg');
+  if (!c || !svg) return;
+  tipBox = box;
+  const r = svg.getBoundingClientRect(), pt = e.touches ? e.touches[0] : e, cx = (pt.clientX - r.left) / r.width * c.W;
+  let bi = 0; for (let i = 1; i < c.n; i++) if (Math.abs(c.x(i) - cx) < Math.abs(c.x(bi) - cx)) bi = i;
+  const tip = box.querySelector('.tip'), v0 = c.series.map(s => s.vals[bi]).find(v => v != null);
+  tip.innerHTML = `${esc(c.labels[bi])}<br>${c.series.map(s => `${c.series.length > 1 ? esc(s.name) + ' ' : ''}<b>${s.vals[bi] == null ? '未公布' : c.fmt(s.vals[bi])}</b>`).join(' · ')}`;
+  tip.style.display = 'block';
+  tip.style.left = Math.min(r.width - 70, Math.max(70, c.x(bi) / c.W * r.width)) + 'px';
+  tip.style.top = ((v0 == null ? c.H / 2 : c.y(v0)) / c.H * r.height) + 'px';
+  const cr = box.querySelector('.cross'); cr.setAttribute('x1', c.x(bi)); cr.setAttribute('x2', c.x(bi)); cr.setAttribute('visibility', 'visible');
+}
+document.addEventListener('mousemove', chartMove);
+document.addEventListener('touchstart', chartMove, { passive: true });
+document.addEventListener('touchmove', chartMove, { passive: true });
+
+const weekLabel = w => `${w.year} 年第 ${w.week} 周`;
+const weekTick = w => `${String(w.year).slice(2)}年${w.week}周`;
+// 首页走势图：每周一个点
 function trendSVG() {
-  const weeks = [...D.weeks].reverse();
-  const key = state.trend;
-  const pts = weeks.map(w => ({ w, v: key === 'ILI' ? w.ili : w.outpatient[key]?.rate ?? null }));
-  const vals = pts.filter(p => p.v != null).map(p => p.v);
-  if (!vals.length) return '<div class="note" style="padding:40px 0;text-align:center">暂无该病原体数据</div>';
-  const W = 820, H = 260, L = 8, R = 40, T = 12, B = 24;
-  const raw = Math.max(...vals) * 1.1, stepV = raw > 20 ? 10 : raw > 8 ? 5 : raw > 4 ? 2 : 1, max = Math.ceil(raw / stepV) * stepV || 1;   // 纵轴取整
-  const x = i => L + i / (pts.length - 1) * (W - L - R), y = v => T + (1 - v / max) * (H - T - B);
-  let d = '', pen = false;
-  pts.forEach((p, i) => { if (p.v == null) { pen = false; return; } d += `${pen ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`; pen = true; });
-  CH = { pts, x, y, W, H };
-  const grid = Array.from({ length: Math.round(max / stepV) + 1 }, (_, k) => k * stepV).map(v => { return `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${W - R + 6}" y="${y(v) + 4}" font-size="11" fill="var(--text-3)">${v}%</text>`; }).join('');
-  const every = Math.ceil(pts.length / 6);   // 横轴等间隔标 6 个左右
-  const ticks = pts.map((p, i) => (pts.length - 1 - i) % every === 0 ? `<text x="${x(i)}" y="${H - 6}" font-size="11" fill="var(--text-3)" text-anchor="middle">${String(p.w.year).slice(2)}年第${p.w.week}周</text>` : '').join('');
-  const dots = pts.map((p, i) => p.v != null ? `<circle cx="${x(i)}" cy="${y(p.v)}" r="${i === pts.length - 1 ? 4 : 2}" fill="var(--accent)"/>` : '').join('');
-  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" id="csvg">${grid}${ticks}
-    <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>${dots}
-    <line id="cross" y1="${T}" y2="${H - B}" stroke="var(--line-2)" visibility="hidden"/></svg>`;
+  const weeks = [...D.weeks].reverse(), key = state.trend;
+  const vals = weeks.map(w => key === 'ILI' ? w.ili : w.outpatient[key]?.rate ?? null);
+  const W = ($('#main')?.clientWidth || 820) - 36;
+  return lineChart('trend', weeks.map(weekLabel), weeks.map(weekTick), [{ name: key, vals, color: 'var(--accent)' }], { W, H: innerWidth <= 760 ? 210 : 260 });
 }
-function bindChart() {
-  const box = $('#chart'), svg = $('#csvg'), tip = $('#tip');
-  if (!svg || !CH) return;
-  const move = e => {
-    const r = svg.getBoundingClientRect(), cx = ((e.touches ? e.touches[0].clientX : e.clientX) - r.left) / r.width * CH.W;
-    let bi = 0; CH.pts.forEach((p, i) => { if (Math.abs(CH.x(i) - cx) < Math.abs(CH.x(bi) - cx)) bi = i; });
-    const p = CH.pts[bi];
-    tip.innerHTML = `${p.w.year} 年第 ${p.w.week} 周<br><b>${p.v == null ? '未公布' : p.v + '%'}</b>`;
-    tip.style.display = 'block';
-    tip.style.left = Math.min(r.width - 60, Math.max(60, CH.x(bi) / CH.W * r.width)) + 'px';
-    tip.style.top = ((p.v == null ? CH.H / 2 : CH.y(p.v)) / CH.H * r.height) + 'px';
-    const c = $('#cross'); c.setAttribute('x1', CH.x(bi)); c.setAttribute('x2', CH.x(bi)); c.setAttribute('visibility', 'visible');
-  };
-  box.addEventListener('mousemove', move); box.addEventListener('touchmove', move, { passive: true });
-  box.addEventListener('mouseleave', () => { tip.style.display = 'none'; $('#cross')?.setAttribute('visibility', 'hidden'); });
-}
+let rsT, lastW = innerWidth;
+addEventListener('resize', () => {                                       // 宽度变了重画首页走势图
+  clearTimeout(rsT);
+  rsT = setTimeout(() => { if ($('#chart') && innerWidth !== lastW) { lastW = innerWidth; $('#chart').innerHTML = trendSVG(); } }, 150);
+});
 
 function smallTrend(name) {
   const ms = [...D.months].reverse().slice(-24);
@@ -302,26 +573,196 @@ function smallTrend(name) {
   const max = Math.max(...nums) || 1, W = 200, H = 40;
   const line = v.map((x, i) => x == null ? '' : `${i && v[i - 1] != null ? 'L' : 'M'}${(i / (v.length - 1) * W).toFixed(1)},${(H - 3 - x / max * (H - 6)).toFixed(1)}`).join('');
   const chg = prevM ? (cur / prevM - 1) * 100 : null;
-  return `<div class="panel sm"><div class="k">${esc(name.replace('其他感染性腹泻病', '感染性腹泻（含诺如）').replace('新型冠状病毒感染', '新冠'))}</div>
+  return `<div class="panel sm" data-kit-item="disease/${encodeURIComponent(name)}"><div class="k">${esc(dName(name))}</div>
     <div class="v">${cur != null ? fmtN(cur) : '—'}<small>例${chg != null ? ` · 环比 <span class="${chg > 0 ? 'up' : 'down'}">${chg > 0 ? '+' : ''}${chg.toFixed(0)}%</span>` : ''}</small></div>
     <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${line}" fill="none" stroke="var(--accent)" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg></div>`;
 }
-function monthTable() {
+// 当月各病种：[名称, 发病, 死亡, 环比%]
+function diseaseRows(all) {
   const m = D.months[0], p = D.months[1];
-  const rows = Object.entries(m.diseases).filter(([n]) => !/合计|总计/.test(n) && !/^[甲乙丙丁戊]型肝炎$|^未分型肝炎$/.test(n))   /* 肝炎子类已含在「病毒性肝炎」里 */.sort((a, b) => b[1][0] - a[1][0]).slice(0, 10);
-  return `<table><tr><th>${m.month.replace('-', ' 年 ')} 月 · 发病数前十</th><th class="num">发病</th><th class="num">死亡</th><th class="num">环比</th></tr>
-    ${rows.map(([n, [c, d]]) => { const pc = p?.diseases[n]?.[0]; const ch = pc ? (c / pc - 1) * 100 : null;
-      return `<tr><td>${esc(n)}</td><td class="num">${c.toLocaleString()}</td><td class="num">${d.toLocaleString()}</td><td class="num ${ch > 0 ? 'up' : ch < 0 ? 'down' : 'muted'}">${ch == null ? '—' : (ch > 0 ? '+' : '') + ch.toFixed(0) + '%'}</td></tr>`; }).join('')}
+  return Object.entries(m.diseases).filter(([n]) => !isTotal(n) && (all || !/^[甲乙丙丁戊]型肝炎$|^未分型肝炎$/.test(n)))   /* 首页去掉肝炎子类（已含在「病毒性肝炎」里） */
+    .map(([n, [c, d]]) => { const pc = p?.diseases[n]?.[0]; return [n, c, d, pc ? (c / pc - 1) * 100 : null]; });
+}
+const chgCell = ch => `<td class="num ${ch > 0 ? 'up' : ch < 0 ? 'down' : 'muted'}">${ch == null ? '—' : (ch > 0 ? '+' : '') + ch.toFixed(0) + '%'}</td>`;
+const disTr = ([n, c, d, ch], i) => `<tr data-kit-item="disease/${encodeURIComponent(n)}">${i != null ? `<td class="muted">${i + 1}</td>` : ''}<td>${esc(n)}</td><td class="num">${c.toLocaleString()}</td><td class="num">${d.toLocaleString()}</td>${chgCell(ch)}<td class="go">›</td></tr>`;
+function monthTable() {
+  const m = D.months[0];
+  const rows = diseaseRows(false).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  return `<table><tr><th>${m.month.replace('-', ' 年 ')} 月 · 发病数前十</th><th class="num">发病</th><th class="num">死亡</th><th class="num">环比</th><th></th></tr>
+    ${rows.map(r => disTr(r)).join('')}
   </table><p class="note" style="padding:10px 14px"><a href="${esc(m.url)}" target="_blank" rel="noopener">查看原文 ↗</a></p>`;
 }
+
+// ── 详情（右侧抽屉） ──
+const rowsHtml = list => list.length ? `<div class="kit-rows">${list.join('')}</div>` : '';
+const weekGo = (x, cur) => `<div class="kit-row" ${x === cur ? '' : `data-kit-go="week/${wid(x)}"`}><span class="kit-rt">${x === cur ? '<b>' : ''}${weekLabel(x)}${x === cur ? '（当前查看）</b>' : ''}</span>
+  <span class="kit-rm">ILI ${x.ili ?? '—'}%${Object.keys(x.outpatient).length ? ` · 门诊头号 ${esc(short(Object.entries(x.outpatient).sort((a, b) => b[1].rate - a[1].rate)[0][0]))}` : ''}</span></div>`;
+
+KIT.item('pathogen', id => {
+  const weeks = [...D.weeks].reverse(), w = D.weeks[0];
+  if (id === 'ili') {                                                     // 流感样病例百分比
+    const series = [{ name: '全国', vals: weeks.map(x => x.ili), color: 'var(--accent)' },
+      { name: '南方', vals: weeks.map(x => x.ili_south), color: 'var(--mid)', dash: 1 }, { name: '北方', vals: weeks.map(x => x.ili_north), color: 'var(--down)', dash: 1 }];
+    const chg = D.weeks[1]?.ili != null && w.ili != null ? +(w.ili - D.weeks[1].ili).toFixed(1) : null;
+    const peak = D.weeks.filter(x => x.ili != null).reduce((a, b) => b.ili > a.ili ? b : a, D.weeks[0]);
+    return { title: '流感样病例百分比（ILI%）', sub: `${weekLabel(w)} · 门急诊就诊者中流感样病例的占比`, thumbIcon: '🤒', thumbBg: 'color-mix(in srgb, var(--accent) 18%, transparent)',
+      tags: [tag(w.level?.south && '南方' + w.level.south), tag(w.level?.north && '北方' + w.level.north)],
+      big: `<b>${w.ili ?? '—'}%</b><span class="muted">全国</span>${chgHtml(chg)}`,
+      body: KIT.sec('本周', KIT.kv([['全国', w.ili != null ? w.ili + '%' : ''], ['南方省份', w.ili_south != null ? w.ili_south + '%' : ''], ['北方省份', w.ili_north != null ? w.ili_north + '%' : ''],
+          ['较上周', chg != null ? (chg > 0 ? '+' : '') + chg + ' 个百分点' : ''], [`近 ${D.weeks.length} 周最高`, peak?.ili != null ? `${peak.ili}%（${weekTick(peak)}）` : '']]))
+        + KIT.sec(`近 ${weeks.length} 周走势`, legend(series) + lineChart('d-ili', weeks.map(weekLabel), weeks.map(weekTick), series, { W: drawerW(), H: 220 }))
+        + KIT.sec('最近几周', rowsHtml(D.weeks.slice(0, 6).map(x => weekGo(x))), `<a class="kit-morelink" href="#/list/weeks">全部 →</a>`),
+      acts: [{ text: '本周报告原文 ↗', href: w.url }] };
+  }
+  const name = Object.keys(PID).find(n => PID[n] === id) || (PID[id] ? id : D.weeks.some(x => x.outpatient[id]) ? id : null);
+  if (!name) return null;
+  const o = w.outpatient[name], ip = w.inpatient[name];
+  const series = [{ name: '门急诊', vals: weeks.map(x => x.outpatient[name]?.rate ?? null), color: 'var(--accent)' },
+    { name: '住院', vals: weeks.map(x => x.inpatient[name]?.rate ?? null), color: 'var(--mid)', dash: 1 }];
+  const rk = (obj) => { const i = Object.entries(obj).sort((a, b) => b[1].rate - a[1].rate).findIndex(([n]) => n === name); return i < 0 ? '' : `第 ${i + 1} / ${Object.keys(obj).length} 位`; };
+  const hist = D.weeks.filter(x => x.outpatient[name]);
+  const peak = hist.reduce((a, b) => !a || b.outpatient[name].rate > a.outpatient[name].rate ? b : a, null);
+  // 南北方前三：哪几周上榜、本周第几
+  const regW = D.weeks.filter(x => x.region?.south || x.region?.north);
+  const pos = (arr) => (arr || []).findIndex(s => s.split('、').includes(name));
+  const regRows = [['south', 'out', '南方 · 门急诊'], ['north', 'out', '北方 · 门急诊'], ['south', 'in', '南方 · 住院'], ['north', 'in', '北方 · 住院']].map(([k, t, l]) => {
+    const cnt = regW.filter(x => pos(x.region[k]?.[t]) >= 0).length, now = pos(w.region?.[k]?.[t]);
+    return [l, `${now >= 0 ? `本周第 ${now + 1}` : '本周未进前三'} · ${cnt}/${regW.length} 周上榜`];
+  });
+  const recent = D.weeks.slice(0, 8);
+  return { title: name, sub: `${weekLabel(w)} · 哨点监测阳性率`, thumbIcon: '🦠', thumbBg: 'color-mix(in srgb, var(--accent) 18%, transparent)',
+    tags: [tag(o && '门诊' + rk(w.outpatient)), tag(ip && '住院' + rk(w.inpatient))],
+    big: `<b>${o?.rate ?? '—'}%</b><span class="muted">门急诊阳性率</span>${chgHtml(o?.chg)}${ip ? `<span class="muted">· 住院 ${ip.rate}%</span>${chgHtml(ip.chg)}` : ''}`,
+    body: KIT.sec('本周', KIT.kv([['门急诊阳性率', o ? o.rate + '%' : ''], ['门诊较上周', o?.chg != null ? (o.chg > 0 ? '+' : '') + o.chg + ' 个百分点' : ''],
+        ['住院阳性率', ip ? ip.rate + '%' : ''], ['住院较上周', ip?.chg != null ? (ip.chg > 0 ? '+' : '') + ip.chg + ' 个百分点' : ''],
+        [`近 ${D.weeks.length} 周最高`, peak ? `${peak.outpatient[name].rate}%（${weekTick(peak)}）` : ''], ['有数据的周', `${hist.length} / ${D.weeks.length}`]]))
+      + KIT.sec(`近 ${weeks.length} 周阳性率`, legend(series) + lineChart('d-pathogen', weeks.map(weekLabel), weeks.map(weekTick), series, { W: drawerW(), H: 220 }), '缺数据的周断开')
+      + KIT.sec('最近变化', `<div class="table-wrap"><table><tr><th>周次</th><th class="num">门急诊</th><th class="num">变化</th><th class="num">住院</th><th class="num">变化</th></tr>
+          ${recent.map(x => { const a = x.outpatient[name], b = x.inpatient[name]; return `<tr data-kit-item="week/${wid(x)}" class="week-row"><td>${weekTick(x)}</td><td class="num">${a ? a.rate + '%' : '—'}</td><td class="num">${chgHtml(a?.chg) || '—'}</td><td class="num">${b ? b.rate + '%' : '—'}</td><td class="num">${chgHtml(b?.chg) || '—'}</td></tr>`; }).join('')}</table></div>`, '百分点')
+      + (regW.length ? KIT.sec('南北方前三出现情况', KIT.kv(regRows), `近 ${regW.length} 周`) : '')
+      + KIT.sec('其它病原体', rowsHtml(Object.entries(w.outpatient).filter(([n]) => n !== name).sort((a, b) => b[1].rate - a[1].rate)
+          .map(([n, v]) => `<div class="kit-row" data-kit-go="pathogen/${pid(n)}"><span class="kit-rt">${esc(n)}</span><span class="kit-rm">门诊 ${v.rate}% · 住院 ${w.inpatient[n]?.rate ?? '—'}%</span></div>`))),
+    acts: [{ text: '本周报告原文 ↗', href: w.url }] };
+});
+
+KIT.item('week', id => {
+  const i = D.weeks.findIndex(x => wid(x) === id), w = D.weeks[i]; if (!w) return null;
+  const out = Object.entries(w.outpatient).sort((a, b) => b[1].rate - a[1].rate), top = out[0];
+  return { title: `${weekLabel(w)}呼吸道传染病哨点监测`, sub: `${w.period ? `${w.period[0]} 至 ${w.period[1]}` : ''} · 中国疾控中心`, thumbIcon: '📋', thumbBg: 'color-mix(in srgb, var(--accent) 18%, transparent)',
+    tags: [tag(i === 0 && '最新一期'), tag(w.level?.south && '南方' + w.level.south), tag(w.level?.north && '北方' + w.level.north)],
+    big: `<b>${w.ili ?? '—'}%</b><span class="muted">流感样病例占门诊</span>${top ? `<span class="muted">· 门诊头号 ${esc(short(top[0]))} ${top[1].rate}%</span>` : ''}`,
+    body: KIT.sec('关键数字', KIT.kv([['ILI 全国', w.ili != null ? w.ili + '%' : ''], ['南方', w.ili_south != null ? w.ili_south + '%' : ''], ['北方', w.ili_north != null ? w.ili_north + '%' : ''],
+        ['门诊头号病原体', top ? `${short(top[0])} ${top[1].rate}%` : '']]))
+      + KIT.sec('门急诊阳性率', rowsHtml(out.map(([n, v]) => `<div class="kit-row" data-kit-go="pathogen/${pid(n)}"><span class="kit-rt">${esc(n)}</span><span class="kit-rm">${v.rate}% ${chgHtml(v.chg)} · 住院 ${w.inpatient[n]?.rate ?? '—'}%</span></div>`)),
+        out.length <= 3 ? '本期只公布前三位' : '')
+      + (w.region?.south ? KIT.sec('南北方前三', KIT.kv([['南方 · 门急诊', w.region.south.out.map(short).join('、')], ['南方 · 住院', w.region.south.in.map(short).join('、')],
+          ['北方 · 门急诊', w.region.north?.out.map(short).join('、')], ['北方 · 住院', w.region.north?.in.map(short).join('、')]])) : '')
+      + KIT.sec('官方分析', KIT.p(w.analysis))
+      + (w.tips?.length ? KIT.sec('健康提示', w.tips.map(t => KIT.p(t)).join('')) : '')
+      + KIT.sec('前后几期', rowsHtml(D.weeks.slice(Math.max(0, i - 2), i + 4).map(x => weekGo(x, w))), `<a class="kit-morelink" href="#/list/weeks">全部 →</a>`),
+    acts: [{ text: '阅读原文 ↗', href: w.url }] };
+});
+
+KIT.item('flu', id => {
+  const fl = D.flus || (D.flu ? [D.flu] : []), i = fl.findIndex(x => fid(x) === id), f = fl[i]; if (!f) return null;
+  const old = [...fl].reverse(), hasOb = fl.filter(x => x.outbreaks != null).length > 1;
+  const ob = [{ name: '暴发疫情', vals: old.map(x => x.outbreaks ?? null), color: 'var(--accent)' }];
+  return { title: f.title, sub: f.until ? `数据截至 ${f.until} · 中国疾控中心国家流感中心` : '中国疾控中心国家流感中心', thumbIcon: '🦠', thumbBg: 'color-mix(in srgb, var(--accent) 18%, transparent)',
+    tags: [tag(i === 0 && '最新一期')],
+    big: f.a_pct != null ? `<b>${f.a_pct}%</b><span class="muted">甲型</span><b>${f.b_pct}%</b><span class="muted">乙型</span>`
+      : f.outbreaks != null ? `<b>${f.outbreaks}</b><span class="muted">起流感样病例暴发</span>` : '',
+    body: KIT.sec('关键数字', KIT.kv([['甲型占比', f.a_pct != null ? f.a_pct + '%' : ''], ['乙型占比', f.b_pct != null ? f.b_pct + '%' : ''],
+        ['甲型中 H1N1', f.h1n1_pct != null ? f.h1n1_pct + '%' : ''], ['甲型中 H3N2', f.h3n2_pct != null ? f.h3n2_pct + '%' : ''], ['暴发疫情', f.outbreaks != null ? f.outbreaks + ' 起' : '']]))
+      + KIT.sec('概要', KIT.p(f.summary))
+      + (f.more?.length ? KIT.sec('毒株分析', f.more.map(t => KIT.p(t)).join('')) : '')
+      + (hasOb ? KIT.sec(`近 ${fl.length} 期暴发疫情数`, lineChart('d-flu', old.map(x => x.title.match(/第\d+周/)?.[0] || x.until), old.map(x => (x.until || '').slice(5)), ob, { W: drawerW(), H: 180, unit: '起' })) : '')
+      + KIT.sec('前后几期', rowsHtml(fl.slice(Math.max(0, i - 2), i + 4).map(x => `<div class="kit-row" ${x === f ? '' : `data-kit-go="flu/${fid(x)}"`}><span class="kit-rt">${x === f ? '<b>' : ''}${esc(x.title.replace('中国流感监测周报', ''))}${x === f ? '</b>' : ''}</span><span class="kit-rm">${x.outbreaks != null ? x.outbreaks + ' 起暴发' : ''}</span></div>`)),
+        `<a class="kit-morelink" href="#/list/flu">全部 →</a>`),
+    acts: [{ text: '阅读原文 ↗', href: f.url }] };
+});
+
+KIT.item('disease', id => {
+  const name = id, cur = D.months[0].diseases[name]; if (!cur) return null;
+  const ms = [...D.months].reverse(), m0 = D.months[0], [y, mm] = m0.month.split('-');
+  const prev = D.months[1]?.diseases[name], ly = D.months.find(m => m.month === `${+y - 1}-${mm}`)?.diseases[name];
+  const pct = (a, b) => b ? `${a >= b ? '+' : ''}${((a / b - 1) * 100).toFixed(0)}%` : '';
+  const cases = ms.map(m => m.diseases[name]?.[0] ?? null), deaths = ms.map(m => m.diseases[name]?.[1] ?? null);
+  const peakI = cases.reduce((a, v, i) => v != null && (a < 0 || v > cases[a]) ? i : a, -1);
+  const ytd = D.months.filter(m => m.month.startsWith(y)).reduce((s, m) => s + (m.diseases[name]?.[0] || 0), 0);
+  const labels = ms.map(m => m.month.replace('-', ' 年 ') + ' 月'), ticks = ms.map(m => m.month.slice(2).replace('-', '.'));
+  return { title: dName(name), sub: `${m0.month.replace('-', ' 年 ')} 月 · 全国法定传染病疫情概况`, thumbIcon: '📊', thumbBg: 'color-mix(in srgb, var(--accent) 18%, transparent)',
+    tags: [tag(isTotal(name) ? '合计' : ''), tag(dName(name) !== name ? name : '')],
+    big: `<b>${cur[0].toLocaleString()}</b><span class="muted">例 · 本月发病</span>${prev ? `<span class="${cur[0] > prev[0] ? 'up' : 'down'}">环比 ${pct(cur[0], prev[0])}</span>` : ''}`,
+    body: KIT.sec('本月', KIT.kv([['发病', cur[0].toLocaleString() + ' 例'], ['死亡', cur[1].toLocaleString() + ' 人'], ['环比', prev ? pct(cur[0], prev[0]) : ''],
+        ['同比（去年同月）', ly ? pct(cur[0], ly[0]) : ''], [`${y} 年累计发病`, ytd.toLocaleString() + ' 例'], [`近 ${ms.length} 个月最高`, peakI >= 0 ? `${fmtN(cases[peakI])}（${ticks[peakI]}）` : '']]))
+      + KIT.sec(`近 ${ms.length} 个月发病数`, lineChart('d-cases', labels, ticks, [{ name: '发病', vals: cases, color: 'var(--accent)' }], { W: drawerW(), H: 200, unit: '例' }), '例')
+      + (deaths.some(v => v > 0) ? KIT.sec(`近 ${ms.length} 个月死亡数`, lineChart('d-deaths', labels, ticks, [{ name: '死亡', vals: deaths, color: 'var(--mid)' }], { W: drawerW(), H: 160, unit: '人' }), '人') : '')
+      + KIT.sec('最近 12 个月', `<div class="table-wrap"><table><tr><th>月份</th><th class="num">发病</th><th class="num">死亡</th><th class="num">环比</th></tr>
+          ${D.months.slice(0, 12).map((m, i) => { const v = m.diseases[name], p = D.months[i + 1]?.diseases[name]; return v ? `<tr><td>${m.month}</td><td class="num">${v[0].toLocaleString()}</td><td class="num">${v[1].toLocaleString()}</td>${chgCell(p?.[0] ? (v[0] / p[0] - 1) * 100 : null)}</tr>` : ''; }).join('')}</table></div>`),
+    acts: [{ text: '本月原文 ↗', href: m0.url }] };
+});
+
+// ── 列表页 ──
+const LPAGE = 30;
+let listN = LPAGE, listKey = '';
+const moreBtn = (n) => n > listN ? `加载更多（${listN} / ${n}）` : '';
+const DSORT = [['cases', '按发病数'], ['deaths', '按死亡数'], ['chg', '按环比'], ['name', '按名称']];
+KIT.list('diseases', (_, q, box) => {
+  const sort = q.get('sort') || 'cases', m = D.months[0];
+  const cmp = { cases: (a, b) => b[1] - a[1], deaths: (a, b) => b[2] - a[2] || b[1] - a[1], chg: (a, b) => (b[3] ?? -1e9) - (a[3] ?? -1e9), name: (a, b) => a[0].localeCompare(b[0], 'zh') }[sort] || ((a, b) => b[1] - a[1]);
+  const rows = diseaseRows(true).sort(cmp);
+  box.innerHTML = KIT.shell({ title: '每月法定传染病', note: `${m.month.replace('-', ' 年 ')} 月 · ${rows.length} 种 · 全国共报告 ${fmtN(m.total)} 例`,
+    sort: DSORT, sortVal: sort,
+    body: `<div class="panel"><div class="table-wrap"><table><tr><th>#</th><th>病种</th><th class="num">发病</th><th class="num">死亡</th><th class="num">环比</th><th></th></tr>
+      ${rows.slice(0, listN).map((r, i) => disTr(r, i)).join('')}</table></div></div>
+      <p class="note" style="margin-top:12px">发病数为 0 的病种也列出；病毒性肝炎下的甲、乙、丙、丁、戊型和未分型肝炎是子类。<a href="${esc(m.url)}" target="_blank" rel="noopener">查看原文 ↗</a></p>`,
+    more: moreBtn(rows.length) });
+});
+KIT.list('weeks', (_, q, box) => {
+  const yr = q.get('year') || 'all', years = [...new Set(D.weeks.map(w => String(w.year)))];
+  const all = D.weeks.filter(w => yr === 'all' || String(w.year) === yr);
+  box.innerHTML = KIT.shell({ title: '往期周报', note: `呼吸道传染病哨点监测 · ${all.length} 期`,
+    chips: [['all', '全部'], ...years.map(y => [y, y + ' 年'])].map(([k, n]) => ({ text: n, href: '#/list/weeks' + (k === 'all' ? '' : '?year=' + k), on: k === yr, count: D.weeks.filter(w => k === 'all' || String(w.year) === k).length })),
+    body: `<div class="panel"><div class="table-wrap"><table><tr><th>周次</th><th>日期</th><th class="num">ILI</th><th>门诊头号病原体</th><th>南方 / 北方</th><th></th></tr>
+      ${all.slice(0, listN).map(w => { const t = Object.entries(w.outpatient).sort((a, b) => b[1].rate - a[1].rate)[0];
+        return `<tr data-kit-item="week/${wid(w)}" class="week-row"><td>${weekTick(w)}</td><td class="muted">${w.period ? `${md(w.period[0])}–${md(w.period[1])}` : ''}</td><td class="num">${w.ili != null ? w.ili + '%' : '—'}</td>
+          <td>${t ? `${esc(short(t[0]))} ${t[1].rate}%` : '—'}</td><td class="muted">${esc((w.level?.south || '—').replace('流行水平', ''))} / ${esc((w.level?.north || '—').replace('流行水平', ''))}</td><td class="go">详情 ›</td></tr>`; }).join('')}</table></div></div>`,
+    more: moreBtn(all.length) });
+});
+KIT.list('flu', (_, q, box) => {
+  const fl = D.flus || (D.flu ? [D.flu] : []);
+  box.innerHTML = KIT.shell({ title: '中国流感监测周报', note: `国家流感中心 · 最近 ${fl.length} 期`,
+    body: `<div class="panel"><div class="table-wrap"><table><tr><th>期次</th><th>截至</th><th class="num">甲 / 乙型</th><th class="num">暴发</th><th></th></tr>
+      ${fl.slice(0, listN).map(f => `<tr data-kit-item="flu/${fid(f)}"><td>${esc(f.title.replace('中国流感监测周报', ''))}</td><td class="muted">${f.until ? md(f.until) : ''}</td>
+        <td class="num">${f.a_pct != null ? `${f.a_pct}% / ${f.b_pct}%` : '—'}</td><td class="num">${f.outbreaks ?? '—'}</td><td class="go">详情 ›</td></tr>`).join('')}</table></div></div>`,
+    more: moreBtn(fl.length) });
+});
+document.addEventListener('click', e => { if (e.target.closest('[data-kit-more]')) { listN += LPAGE; render(); } });
+document.addEventListener('change', e => {
+  if (!e.target.matches('[data-kit-sort]')) return;
+  const r = KIT.parse(); r.q.set('sort', e.target.value);
+  location.hash = `#/list/${r.type}?${r.q}`;
+});
+// 地址变化：换了列表才重置分页；列表页里点顶部导航回首页后滚到锚点
+let wantAnchor = false;
+document.addEventListener('click', e => { if (e.target.closest('.nav a') && KIT.parse()) wantAnchor = true; });
+window.addEventListener('hashchange', () => {
+  const r = KIT.parse();
+  if (r?.kind === 'item') return;
+  const page = r?.kind === 'list' ? location.hash : '';
+  if (page && page !== listKey) { listN = LPAGE; listKey = page; }
+  setTimeout(() => {
+    if (wantAnchor && !r) document.getElementById(location.hash.slice(1))?.scrollIntoView();
+    wantAnchor = false;
+  });
+}, true);
 
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-trend]');
   if (!t) return;
   state.trend = t.dataset.trend; store.set('trend', state.trend);
   document.querySelectorAll('[data-trend]').forEach(b => b.classList.toggle('on', b === t));
-  $('#chart').innerHTML = trendSVG() + '<div class="tip" id="tip"></div>';
-  bindChart();
+  $('#chart').innerHTML = trendSVG();
 });
 function applyTheme(t) { document.documentElement.dataset.theme = t; }
 applyTheme(store.get('theme', 'dark'));
@@ -332,11 +773,13 @@ async function load() {
   try {
     D = await fetch('data.json', { cache: 'no-cache' }).then(r => r.json());   // no-cache：更新后刷新即可见
     render();
+    KIT.boot();
   } catch (e) {
     if (!D) $('#main').innerHTML = '<div class="panel pad">数据加载失败，请稍后刷新</div>';
   } finally { $('#refresh').classList.remove('spin'); }
 }
 $('#refresh').addEventListener('click', load);
+KIT.init(render);
 load();
 </script>
 </body>
